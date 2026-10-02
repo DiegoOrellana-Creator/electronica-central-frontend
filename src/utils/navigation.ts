@@ -12,6 +12,8 @@ export const BRAND_NAME = 'Electrónica Central AZ'
 
 export const ROUTES = {
   login: '/login',
+  recuperar: '/recuperar',
+  restablecer: '/restablecer',
   dashboard: '/dashboard',
   usuarios: '/usuarios',
   bitacora: '/bitacora',

@@ -16,3 +16,22 @@ export function parsePrecio(texto: string): ResultadoPrecio {
   if (!/^\d+(\.\d{1,2})?$/.test(limpio)) return { error: 'El precio admite hasta 2 decimales.' }
   return { valor }
 }
+
+export interface ReglaContrasena {
+  texto: string
+  cumple: boolean
+}
+
+/** Reglas de contrasena nueva; deben coincidir con las del backend (passwordPolicy.js). */
+export function evaluarContrasena(contrasena: string): ReglaContrasena[] {
+  return [
+    { texto: 'Entre 8 y 128 caracteres', cumple: contrasena.length >= 8 && contrasena.length <= 128 },
+    { texto: 'Una letra minúscula', cumple: /\p{Ll}/u.test(contrasena) },
+    { texto: 'Una letra mayúscula', cumple: /\p{Lu}/u.test(contrasena) },
+    { texto: 'Un número', cumple: /\d/.test(contrasena) },
+    { texto: 'Un carácter especial (por ejemplo ! @ # $ %)', cumple: /[^\p{L}\p{N}\s]/u.test(contrasena) },
+  ]
+}
+
+export const esContrasenaValida = (contrasena: string): boolean =>
+  evaluarContrasena(contrasena).every((regla) => regla.cumple)

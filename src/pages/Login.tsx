@@ -1,17 +1,24 @@
+import { useEffect as useEfectoFondo } from "react";
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { EyeIcon, EyeSlashIcon, WarningCircleIcon } from '@phosphor-icons/react'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { useLoginForm } from '../hooks/useLoginForm'
-import { BRAND_NAME } from '../utils/navigation'
+import { BRAND_NAME, ROUTES } from '../utils/navigation'
 import { FOCUS_RING, cn } from '../utils/styles'
 
 export default function Login() {
+  useEfectoFondo(() => {
+    const anterior = document.body.style.cssText;
+    document.body.style.cssText += "background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('/fondo-login.jpg') center / cover no-repeat fixed;";
+    return () => { document.body.style.cssText = anterior; };
+  }, []);
   const form = useLoginForm()
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10 sm:px-6">
+    <main className="flex min-h-dvh items-center justify-center  px-4 py-10 sm:px-6">
       <div className="w-full max-w-md">
         <header className="mb-6 flex flex-col items-center gap-3 text-center">
           <p translate="no" className="text-xl font-bold text-slate-900">
@@ -86,6 +93,7 @@ export default function Login() {
               }
             />
 
+            <div className="flex flex-wrap items-center justify-between gap-x-4">
             <label className="flex min-h-11 w-fit cursor-pointer items-center gap-2 text-sm text-slate-700">
               <input
                 type="checkbox"
@@ -97,6 +105,13 @@ export default function Login() {
               />
               Recordar sesión
             </label>
+            <Link
+              to={ROUTES.recuperar}
+              className={cn('flex min-h-11 items-center rounded-md text-sm font-medium text-blue-800 underline', FOCUS_RING)}
+            >
+              ¿Olvidó su contraseña?
+            </Link>
+            </div>
 
             <Button type="submit" loading={form.loading} className="w-full">
               {form.loading ? 'Ingresando…' : 'Ingresar'}

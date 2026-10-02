@@ -276,7 +276,7 @@ export type ResultadoBitacora = 'exito' | 'advertencia' | 'error'
 
 /** Registro de auditoria. Es de solo lectura: la aplicacion nunca lo modifica ni lo elimina. */
 export interface RegistroBitacora {
-  id: number
+  id: number | string
   /** Fecha y hora en formato ISO 8601. */
   fechaHora: string
   accion: string

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { CaretDownIcon, SignOutIcon } from '@phosphor-icons/react'
+import { cerrarSesion } from '../services/authService'
 import { ROUTES } from '../utils/navigation'
 import { FOCUS_RING, cn } from '../utils/styles'
 import { useClickOutside } from '../hooks/useClickOutside'
@@ -16,6 +17,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ user }: UserMenuProps) {
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -72,17 +74,20 @@ export default function UserMenu({ user }: UserMenuProps) {
             <p className="text-sm font-medium text-slate-900">{user.name}</p>
             <p className="text-xs text-slate-600">{user.role}</p>
           </div>
-          <Link
-            to={ROUTES.login}
-            onClick={close}
+          <button
+            type="button"
+            onClick={() => {
+              close()
+              void cerrarSesion().finally(() => navigate(ROUTES.login, { replace: true }))
+            }}
             className={cn(
-              'mt-1 flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-medium text-slate-700 hover:bg-slate-100',
+              'mt-1 flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-sm font-medium text-slate-700 hover:bg-slate-100',
               FOCUS_RING,
             )}
           >
             <SignOutIcon size={18} aria-hidden="true" />
             Cerrar sesión
-          </Link>
+          </button>
         </div>
       )}
     </div>
