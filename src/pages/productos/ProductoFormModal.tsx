@@ -9,7 +9,7 @@ import Modal from '../../components/Modal'
 import Select from '../../components/Select'
 import { ErrorDeServicio } from '../../services/simulacion'
 import type { DatosProducto } from '../../services/productoService'
-import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../../utils/mockData'
+import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../../utils/tipos'
 import { focusField } from '../../utils/forms'
 import { FOCUS_RING, cn } from '../../utils/styles'
 import { parsePrecio } from '../../utils/validators'
@@ -86,10 +86,10 @@ export default function ProductoFormModal({ producto, categorias, unidades, onSu
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         precio: resultadoPrecio.valor,
-        categoriaId: Number(categoriaId),
+        categoriaId,
         marca: marca.trim(),
         modelo: modelo.trim(),
-        unidadId: Number(unidadId),
+        unidadId,
         estado,
       })
     } catch (error) {

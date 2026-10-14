@@ -1,58 +1,46 @@
-import { PERMISOS, ROLES_INICIALES } from '../utils/mockData'
-import type { Permiso, Rol } from '../utils/mockData'
-import { normalizeText } from '../utils/text'
-import { ErrorDeServicio, LATENCIA_ESCRITURA_MS, LATENCIA_LECTURA_MS, esperar } from './simulacion'
+import { api } from './apiClient'
+import { conErrores } from './errores'
+import type { Permiso, Rol } from '../utils/tipos'
 
-// Almacen en memoria que reemplaza temporalmente al backend (rol y permiso).
+interface FilaRol {
+  id_rol: string
+  nombre: string
+  descripcion: string | null
+  permisos_ids: string[]
+}
+
+interface FilaPermiso {
+  id_permiso: string
+  nombre: string
+  modulo: string
+}
 
 export interface DatosRol {
   nombre: string
   descripcion: string
-  permisosIds: number[]
+  permisosIds: string[]
 }
 
-const copiar = (rol: Rol): Rol => ({ ...rol, permisosIds: [...rol.permisosIds] })
-
-let roles: Rol[] = ROLES_INICIALES.map(copiar)
-let siguienteId = Math.max(...roles.map((r) => r.id)) + 1
-
-function validarNombreUnico(nombre: string, idActual?: number) {
-  const existe = roles.some(
-    (r) => r.id !== idActual && normalizeText(r.nombre) === normalizeText(nombre.trim()),
-  )
-  if (existe) throw new ErrorDeServicio('Ya existe un rol con ese nombre.', 'nombre')
-}
+const aRol = (fila: FilaRol): Rol => ({
+  id: fila.id_rol,
+  nombre: fila.nombre,
+  descripcion: fila.descripcion ?? '',
+  permisosIds: fila.permisos_ids,
+})
 
 export async function listarRoles(): Promise<Rol[]> {
-  await esperar(LATENCIA_LECTURA_MS)
-  return roles.map(copiar)
+  return (await api<FilaRol[]>('/api/roles')).map(aRol)
 }
 
 export async function listarPermisos(): Promise<Permiso[]> {
-  await esperar(LATENCIA_LECTURA_MS)
-  return PERMISOS.map((permiso) => ({ ...permiso }))
+  const filas = await api<FilaPermiso[]>('/api/permisos')
+  return filas.map((fila) => ({ id: fila.id_permiso, nombre: fila.nombre, modulo: fila.modulo }))
 }
 
-export async function crearRol(datos: DatosRol): Promise<Rol> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  validarNombreUnico(datos.nombre)
-  const nuevo: Rol = {
-    id: siguienteId++,
-    nombre: datos.nombre.trim(),
-    descripcion: datos.descripcion.trim(),
-    permisosIds: [...datos.permisosIds],
-  }
-  roles = [...roles, nuevo]
-  return copiar(nuevo)
+export function crearRol(datos: DatosRol): Promise<Rol> {
+  return conErrores(async () => aRol(await api<FilaRol>('/api/roles', { method: 'POST', body: datos })))
 }
 
-export async function actualizarRol(id: number, datos: DatosRol): Promise<Rol> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  const rol = roles.find((r) => r.id === id)
-  if (!rol) throw new ErrorDeServicio('El rol no existe.')
-  validarNombreUnico(datos.nombre, id)
-  rol.nombre = datos.nombre.trim()
-  rol.descripcion = datos.descripcion.trim()
-  rol.permisosIds = [...datos.permisosIds]
-  return copiar(rol)
+export function actualizarRol(id: string, datos: DatosRol): Promise<Rol> {
+  return conErrores(async () => aRol(await api<FilaRol>(`/api/roles/${id}`, { method: 'PATCH', body: datos })))
 }

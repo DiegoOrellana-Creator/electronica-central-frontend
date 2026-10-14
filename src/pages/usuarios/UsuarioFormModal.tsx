@@ -6,13 +6,14 @@ import Button from '../../components/Button'
 import { FieldError } from '../../components/FormField'
 import Input from '../../components/Input'
 import Modal from '../../components/Modal'
+import PasswordRules from '../../components/PasswordRules'
 import Select from '../../components/Select'
 import { ErrorDeServicio } from '../../services/simulacion'
 import type { DatosUsuario } from '../../services/usuarioService'
-import type { EstadoUsuario, Rol, Usuario } from '../../utils/mockData'
+import type { EstadoUsuario, Rol, Usuario } from '../../utils/tipos'
 import { focusField } from '../../utils/forms'
 import { FOCUS_RING, cn } from '../../utils/styles'
-import { isValidEmail } from '../../utils/validators'
+import { esContrasenaValida, isValidEmail } from '../../utils/validators'
 
 interface UsuarioFormModalProps {
   /** Si se indica, el formulario edita a ese usuario; si no, crea uno nuevo. */
@@ -22,10 +23,15 @@ interface UsuarioFormModalProps {
   onClose: () => void
 }
 
-type Campo = 'nombre' | 'correo' | 'rolesIds'
+type Campo = 'nombre' | 'correo' | 'contrasena' | 'rolesIds'
 type Errores = Partial<Record<Campo, string>>
 
-const NOMBRE_DEL_CAMPO: Record<Campo, string> = { nombre: 'nombre', correo: 'correo', rolesIds: 'roles' }
+const NOMBRE_DEL_CAMPO: Record<Campo, string> = {
+  nombre: 'nombre',
+  correo: 'correo',
+  contrasena: 'contrasena',
+  rolesIds: 'roles',
+}
 
 export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: UsuarioFormModalProps) {
   const editando = usuario !== undefined
@@ -34,8 +40,10 @@ export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: 
 
   const [nombre, setNombre] = useState(usuario?.nombre ?? '')
   const [correo, setCorreo] = useState(usuario?.correo ?? '')
+  const [contrasena, setContrasena] = useState('')
+  const [mostrarContrasena, setMostrarContrasena] = useState(false)
   const [estado, setEstado] = useState<EstadoUsuario>(usuario?.estado ?? 'activo')
-  const [rolesIds, setRolesIds] = useState<number[]>(usuario?.rolesIds ?? [])
+  const [rolesIds, setRolesIds] = useState<string[]>(usuario?.rolesIds ?? [])
   const [errores, setErrores] = useState<Errores>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -45,7 +53,7 @@ export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: 
     setFormError(null)
   }
 
-  const alternarRol = (rolId: number) => {
+  const alternarRol = (rolId: string) => {
     setRolesIds((prev) => (prev.includes(rolId) ? prev.filter((id) => id !== rolId) : [...prev, rolId]))
     limpiarError('rolesIds')
   }
@@ -59,9 +67,10 @@ export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: 
     if (!nombre.trim()) nuevos.nombre = 'Ingrese el nombre del usuario.'
     if (!correo.trim()) nuevos.correo = 'Ingrese el correo electrónico.'
     else if (!isValidEmail(correo)) nuevos.correo = 'Ingrese un correo electrónico válido.'
+    if (!editando && !esContrasenaValida(contrasena)) nuevos.contrasena = 'La contraseña no cumple los requisitos.'
     if (!editando && rolesIds.length === 0) nuevos.rolesIds = 'Seleccione al menos un rol.'
 
-    const primerInvalido = (['nombre', 'correo', 'rolesIds'] as const).find((campo) => nuevos[campo])
+    const primerInvalido = (['nombre', 'correo', 'contrasena', 'rolesIds'] as const).find((campo) => nuevos[campo])
     if (primerInvalido) {
       setErrores(nuevos)
       setFormError('Revise los campos marcados.')
@@ -73,7 +82,13 @@ export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: 
     setFormError(null)
     setGuardando(true)
     try {
-      await onSubmit({ nombre: nombre.trim(), correo: correo.trim(), estado, rolesIds })
+      await onSubmit({
+        nombre: nombre.trim(),
+        correo: correo.trim(),
+        estado,
+        rolesIds,
+        ...(editando ? {} : { contrasena }),
+      })
     } catch (error) {
       if (error instanceof ErrorDeServicio && error.campo === 'correo') {
         flushSync(() => {
@@ -139,6 +154,36 @@ export default function UsuarioFormModal({ usuario, roles, onSubmit, onClose }: 
           error={errores.correo}
           disabled={guardando}
         />
+
+        {!editando && (
+          <div className="space-y-2">
+            <Input
+              label="Contraseña inicial"
+              name="contrasena"
+              type={mostrarContrasena ? 'text' : 'password'}
+              autoComplete="new-password"
+              required
+              value={contrasena}
+              onChange={(event) => {
+                setContrasena(event.target.value)
+                limpiarError('contrasena')
+              }}
+              error={errores.contrasena}
+              disabled={guardando}
+              aria-describedby="reglas-contrasena-usuario"
+              endAdornment={
+                <button
+                  type="button"
+                  onClick={() => setMostrarContrasena((valor) => !valor)}
+                  className={cn('rounded px-2 py-1 text-sm font-medium text-blue-800', FOCUS_RING)}
+                >
+                  {mostrarContrasena ? 'Ocultar' : 'Mostrar'}
+                </button>
+              }
+            />
+            <PasswordRules id="reglas-contrasena-usuario" contrasena={contrasena} />
+          </div>
+        )}
 
         <Select
           label="Estado"

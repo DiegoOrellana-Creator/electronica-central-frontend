@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { listarProductos } from '../services/productoService'
 import { actualizarUnidad, cambiarEstadoUnidad, crearUnidad, listarUnidades } from '../services/unidadService'
 import type { DatosUnidad } from '../services/unidadService'
-import type { EstadoUnidad, UnidadMedida } from '../utils/mockData'
+import type { EstadoUnidad, UnidadMedida } from '../utils/tipos'
 import type { EstadoCarga } from './estadoCarga'
 
 /** Unidades de medida con sus operaciones. Hoy usa servicios simulados en memoria. */
 export function useUnidades() {
   const [unidades, setUnidades] = useState<UnidadMedida[]>([])
   /** Cantidad de productos que usan cada unidad (solo lectura, informativo). */
-  const [productosPorUnidad, setProductosPorUnidad] = useState<ReadonlyMap<number, number>>(new Map())
+  const [productosPorUnidad, setProductosPorUnidad] = useState<ReadonlyMap<string, number>>(new Map())
   const [estado, setEstado] = useState<EstadoCarga>('cargando')
   const [intento, setIntento] = useState(0)
 
@@ -18,7 +18,7 @@ export function useUnidades() {
     Promise.all([listarUnidades(), listarProductos()]).then(
       ([datosUnidades, datosProductos]) => {
         if (!vigente) return
-        const conteo = new Map<number, number>()
+        const conteo = new Map<string, number>()
         for (const producto of datosProductos) {
           conteo.set(producto.unidadId, (conteo.get(producto.unidadId) ?? 0) + 1)
         }
@@ -48,11 +48,11 @@ export function useUnidades() {
     setUnidades((prev) => [...prev, nueva])
   }
 
-  const actualizar = async (id: number, datos: DatosUnidad) => {
+  const actualizar = async (id: string, datos: DatosUnidad) => {
     reemplazar(await actualizarUnidad(id, datos))
   }
 
-  const cambiarEstado = async (id: number, nuevoEstado: EstadoUnidad) => {
+  const cambiarEstado = async (id: string, nuevoEstado: EstadoUnidad) => {
     reemplazar(await cambiarEstadoUnidad(id, nuevoEstado))
   }
 

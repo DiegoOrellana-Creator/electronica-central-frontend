@@ -1,11 +1,15 @@
-import { UNIDADES_CATALOGO } from '../utils/mockData'
-import type { EstadoUnidad, UnidadMedida } from '../utils/mockData'
-import { normalizeText } from '../utils/text'
-import { ErrorDeServicio, LATENCIA_ESCRITURA_MS, LATENCIA_LECTURA_MS, esperar } from './simulacion'
+import { api } from './apiClient'
+import { conErrores } from './errores'
+import type { EstadoUnidad, UnidadMedida } from '../utils/tipos'
 
-// Almacen en memoria que reemplaza temporalmente al backend. Al conectarlo, solo cambia
-// el interior de estas funciones; las firmas y los errores de negocio se mantienen.
 // No existe eliminacion fisica: una unidad solo se activa o se desactiva.
+
+interface FilaUnidad {
+  id_unidad_medida: string
+  nombre: string
+  simbolo: string
+  activo: boolean
+}
 
 export interface DatosUnidad {
   nombre: string
@@ -13,69 +17,35 @@ export interface DatosUnidad {
   estado: EstadoUnidad
 }
 
-const copiar = (unidad: UnidadMedida): UnidadMedida => ({ ...unidad })
+const aUnidad = (fila: FilaUnidad): UnidadMedida => ({
+  id: fila.id_unidad_medida,
+  nombre: fila.nombre,
+  abreviatura: fila.simbolo,
+  estado: fila.activo ? 'activo' : 'inactivo',
+})
 
-let unidades: UnidadMedida[] = UNIDADES_CATALOGO.map(copiar)
-let siguienteId = Math.max(...unidades.map((u) => u.id)) + 1
-
-function buscar(id: number): UnidadMedida {
-  const unidad = unidades.find((u) => u.id === id)
-  if (!unidad) throw new ErrorDeServicio('La unidad de medida no existe.')
-  return unidad
-}
-
-function validarDatos(datos: DatosUnidad, idActual?: number) {
-  const nombre = normalizeText(datos.nombre.trim())
-  const abreviatura = normalizeText(datos.abreviatura.trim())
-  if (!nombre) throw new ErrorDeServicio('Ingrese el nombre de la unidad.', 'nombre')
-  if (!abreviatura) throw new ErrorDeServicio('Ingrese la abreviatura.', 'abreviatura')
-  if (unidades.some((u) => u.id !== idActual && normalizeText(u.nombre.trim()) === nombre)) {
-    throw new ErrorDeServicio('Ya existe una unidad con ese nombre.', 'nombre')
-  }
-  if (unidades.some((u) => u.id !== idActual && normalizeText(u.abreviatura.trim()) === abreviatura)) {
-    throw new ErrorDeServicio('Ya existe una unidad con esa abreviatura.', 'abreviatura')
-  }
-}
-
-function aplicar(unidad: UnidadMedida, datos: DatosUnidad) {
-  unidad.nombre = datos.nombre.trim()
-  unidad.abreviatura = datos.abreviatura.trim()
-  unidad.estado = datos.estado
-}
-
-/**
- * Consulta sincrona del almacen en memoria, sin latencia simulada. La usan otros servicios
- * (por ejemplo, Productos) para validar referencias; el almacen sigue siendo uno solo.
- */
-export function unidadesActuales(): UnidadMedida[] {
-  return unidades.map(copiar)
-}
+const cuerpo = (datos: DatosUnidad) => ({
+  nombre: datos.nombre.trim(),
+  simbolo: datos.abreviatura.trim(),
+  activo: datos.estado === 'activo',
+})
 
 export async function listarUnidades(): Promise<UnidadMedida[]> {
-  await esperar(LATENCIA_LECTURA_MS)
-  return unidades.map(copiar)
+  return (await api<FilaUnidad[]>('/api/unidades')).map(aUnidad)
 }
 
-export async function crearUnidad(datos: DatosUnidad): Promise<UnidadMedida> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  validarDatos(datos)
-  const nueva: UnidadMedida = { id: siguienteId++, ...datos }
-  aplicar(nueva, datos)
-  unidades = [...unidades, nueva]
-  return copiar(nueva)
+export function crearUnidad(datos: DatosUnidad): Promise<UnidadMedida> {
+  return conErrores(async () => aUnidad(await api<FilaUnidad>('/api/unidades', { method: 'POST', body: cuerpo(datos) })))
 }
 
-export async function actualizarUnidad(id: number, datos: DatosUnidad): Promise<UnidadMedida> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  const unidad = buscar(id)
-  validarDatos(datos, id)
-  aplicar(unidad, datos)
-  return copiar(unidad)
+export function actualizarUnidad(id: string, datos: DatosUnidad): Promise<UnidadMedida> {
+  return conErrores(async () =>
+    aUnidad(await api<FilaUnidad>(`/api/unidades/${id}`, { method: 'PATCH', body: cuerpo(datos) })),
+  )
 }
 
-export async function cambiarEstadoUnidad(id: number, estado: EstadoUnidad): Promise<UnidadMedida> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  const unidad = buscar(id)
-  unidad.estado = estado
-  return copiar(unidad)
+export function cambiarEstadoUnidad(id: string, estado: EstadoUnidad): Promise<UnidadMedida> {
+  return conErrores(async () =>
+    aUnidad(await api<FilaUnidad>(`/api/unidades/${id}/estado`, { method: 'PATCH', body: { activo: estado === 'activo' } })),
+  )
 }

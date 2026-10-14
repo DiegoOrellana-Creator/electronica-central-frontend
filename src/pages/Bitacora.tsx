@@ -14,7 +14,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useBitacora } from '../hooks/useBitacora'
 import { formatDateTime, toDateKey } from '../utils/formatters'
-import type { RegistroBitacora, ResultadoBitacora } from '../utils/mockData'
+import type { RegistroBitacora, ResultadoBitacora } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 
 const TAMANO_PAGINA = 10

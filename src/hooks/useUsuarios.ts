@@ -8,7 +8,7 @@ import {
   revocarRolUsuario,
 } from '../services/usuarioService'
 import type { DatosUsuario } from '../services/usuarioService'
-import type { EstadoUsuario, Usuario } from '../utils/mockData'
+import type { EstadoUsuario, Usuario } from '../utils/tipos'
 import type { EstadoCarga } from './estadoCarga'
 
 /** Usuarios con sus operaciones. Hoy usa servicios simulados en memoria. */
@@ -47,19 +47,19 @@ export function useUsuarios() {
     setUsuarios((prev) => [nuevo, ...prev])
   }
 
-  const actualizar = async (id: number, datos: DatosUsuario) => {
+  const actualizar = async (id: string, datos: DatosUsuario) => {
     reemplazar(await actualizarUsuario(id, datos))
   }
 
-  const cambiarEstado = async (id: number, nuevoEstado: EstadoUsuario) => {
+  const cambiarEstado = async (id: string, nuevoEstado: EstadoUsuario) => {
     reemplazar(await cambiarEstadoUsuario(id, nuevoEstado))
   }
 
-  const asignarRol = async (usuarioId: number, rolId: number) => {
+  const asignarRol = async (usuarioId: string, rolId: string) => {
     reemplazar(await asignarRolUsuario(usuarioId, rolId))
   }
 
-  const revocarRol = async (usuarioId: number, rolId: number) => {
+  const revocarRol = async (usuarioId: string, rolId: string) => {
     reemplazar(await revocarRolUsuario(usuarioId, rolId))
   }
 

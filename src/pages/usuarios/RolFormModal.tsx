@@ -8,7 +8,7 @@ import Input from '../../components/Input'
 import Modal from '../../components/Modal'
 import { ErrorDeServicio } from '../../services/simulacion'
 import type { DatosRol } from '../../services/rolService'
-import type { Permiso, Rol } from '../../utils/mockData'
+import type { Permiso, Rol } from '../../utils/tipos'
 import { focusField } from '../../utils/forms'
 import { agruparPorModulo } from '../../utils/permisos'
 import { FOCUS_RING, cn } from '../../utils/styles'
@@ -37,7 +37,7 @@ export default function RolFormModal({ rol, permisos, onSubmit, onClose }: RolFo
 
   const [nombre, setNombre] = useState(rol?.nombre ?? '')
   const [descripcion, setDescripcion] = useState(rol?.descripcion ?? '')
-  const [permisosIds, setPermisosIds] = useState<number[]>(rol?.permisosIds ?? [])
+  const [permisosIds, setPermisosIds] = useState<string[]>(rol?.permisosIds ?? [])
   const [errores, setErrores] = useState<Errores>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -47,7 +47,7 @@ export default function RolFormModal({ rol, permisos, onSubmit, onClose }: RolFo
     setFormError(null)
   }
 
-  const alternarPermiso = (permisoId: number) => {
+  const alternarPermiso = (permisoId: string) => {
     setPermisosIds((prev) =>
       prev.includes(permisoId) ? prev.filter((id) => id !== permisoId) : [...prev, permisoId],
     )

@@ -1,4 +1,4 @@
-import type { Categoria } from '../../utils/mockData'
+import type { Categoria } from '../../utils/tipos'
 
 /** Opciones de un `<select>` de categorias: las subcategorias agrupadas bajo su categoria principal. */
 export default function CategoriaOptions({ categorias }: { categorias: readonly Categoria[] }) {

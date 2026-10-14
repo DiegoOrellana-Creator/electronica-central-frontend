@@ -8,7 +8,7 @@ import Modal from '../../components/Modal'
 import Select from '../../components/Select'
 import { ErrorDeServicio } from '../../services/simulacion'
 import type { DatosUnidad } from '../../services/unidadService'
-import type { EstadoUnidad, UnidadMedida } from '../../utils/mockData'
+import type { EstadoUnidad, UnidadMedida } from '../../utils/tipos'
 import { focusField } from '../../utils/forms'
 
 interface UnidadFormModalProps {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { actualizarRol, crearRol, listarPermisos, listarRoles } from '../services/rolService'
 import type { DatosRol } from '../services/rolService'
-import type { Permiso, Rol } from '../utils/mockData'
+import type { Permiso, Rol } from '../utils/tipos'
 import type { EstadoCarga } from './estadoCarga'
 
 /** Roles y permisos con sus operaciones. Hoy usa servicios simulados en memoria. */
@@ -39,7 +39,7 @@ export function useRoles() {
     setRoles((prev) => [...prev, nuevo])
   }
 
-  const actualizar = async (id: number, datos: DatosRol) => {
+  const actualizar = async (id: string, datos: DatosRol) => {
     const actualizado = await actualizarRol(id, datos)
     setRoles((prev) => prev.map((r) => (r.id === id ? actualizado : r)))
   }

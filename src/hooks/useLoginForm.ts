@@ -8,21 +8,15 @@ import { ROUTES } from '../utils/navigation'
 export const REQUIRED_FIELDS_MESSAGE = 'Complete los campos requeridos'
 const LOGIN_FAILED_MESSAGE = 'No se pudo iniciar sesión. Intente nuevamente.'
 
-/** Mensaje segun la respuesta del backend: cuenta bloqueada, credenciales incorrectas o sin conexion. */
+/**
+ * Mensaje segun la respuesta del backend: el backend cuenta los intentos y decide el bloqueo
+ * (401 = datos incorrectos, 423 = cuenta bloqueada 3 minutos); aqui solo se muestra el texto.
+ */
 function mensajeDeLogin(error: unknown): string {
   if (!(error instanceof ErrorDeApi)) return LOGIN_FAILED_MESSAGE
   if (error.estado === 0) return error.message
-  const detalle = error.detalle as { reason?: string; bloqueadoHasta?: string } | undefined
-  if (detalle?.reason === 'ACCOUNT_LOCKED') {
-    const hasta = detalle.bloqueadoHasta ? new Date(detalle.bloqueadoHasta) : null
-    const hora = hasta && !Number.isNaN(hasta.getTime())
-      ? hasta.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })
-      : null
-    return hora
-      ? `Cuenta bloqueada por intentos fallidos. Intente de nuevo a las ${hora} o contacte al administrador.`
-      : 'Cuenta bloqueada por intentos fallidos. Intente más tarde o contacte al administrador.'
-  }
-  if (error.estado === 401) return 'Credenciales incorrectas.'
+  if (error.estado === 423) return 'Usuario bloqueado por 3 minutos.'
+  if (error.estado === 401) return 'Datos incorrectos.'
   return LOGIN_FAILED_MESSAGE
 }
 

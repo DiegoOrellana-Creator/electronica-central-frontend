@@ -1,5 +1,5 @@
 import { CheckIcon } from '@phosphor-icons/react'
-import type { Permiso } from '../../utils/mockData'
+import type { Permiso } from '../../utils/tipos'
 import { agruparPorModulo } from '../../utils/permisos'
 
 interface PermisosPorModuloProps {

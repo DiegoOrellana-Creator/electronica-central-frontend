@@ -1,5 +1,5 @@
 import { api } from './apiClient'
-import type { RegistroBitacora, ResultadoBitacora } from '../utils/mockData'
+import type { RegistroBitacora, ResultadoBitacora } from '../utils/tipos'
 
 // La bitacora es de solo lectura: el servicio solo expone consulta.
 
@@ -28,6 +28,26 @@ const ACCIONES: Record<string, string> = {
   ACCESO_RESTABLECIDO: 'Acceso restablecido',
   USUARIO_CREADO: 'Usuario creado',
   CLIENTE_CREADO: 'Cliente creado',
+  INICIO_SESION_INACTIVO: 'Intento con cuenta inactiva',
+  USUARIO_ACTUALIZADO: 'Usuario actualizado',
+  USUARIO_ACTIVADO: 'Usuario activado',
+  USUARIO_DESACTIVADO: 'Usuario desactivado',
+  ROL_CREADO: 'Rol creado',
+  ROL_ACTUALIZADO: 'Rol actualizado',
+  ROL_ASIGNADO: 'Rol asignado',
+  ROL_REVOCADO: 'Rol revocado',
+  CATEGORIA_CREADA: 'Categoría creada',
+  CATEGORIA_ACTUALIZADA: 'Categoría actualizada',
+  CATEGORIA_ACTIVADA: 'Categoría activada',
+  CATEGORIA_DESACTIVADA: 'Categoría desactivada',
+  UNIDAD_CREADA: 'Unidad de medida creada',
+  UNIDAD_ACTUALIZADA: 'Unidad de medida actualizada',
+  UNIDAD_ACTIVADA: 'Unidad de medida activada',
+  UNIDAD_DESACTIVADA: 'Unidad de medida desactivada',
+  PRODUCTO_CREADO: 'Producto creado',
+  PRODUCTO_ACTUALIZADO: 'Producto actualizado',
+  PRODUCTO_ACTIVADO: 'Producto activado',
+  PRODUCTO_DESACTIVADO: 'Producto desactivado',
 }
 
 // Acciones cuyo objeto es el nombre de un usuario.
@@ -35,6 +55,7 @@ const ACCIONES_DE_USUARIO = new Set([
   'INICIO_SESION',
   'INICIO_SESION_FALLIDO',
   'INICIO_SESION_BLOQUEADO',
+  'INICIO_SESION_INACTIVO',
   'CUENTA_BLOQUEADA',
   'CIERRE_SESION',
   'CONTRASENA_CAMBIADA',
@@ -46,6 +67,7 @@ const ACCIONES_DE_USUARIO = new Set([
 const MOTIVOS: Record<string, string> = {
   INICIO_SESION_FALLIDO: 'contraseña incorrecta',
   INICIO_SESION_BLOQUEADO: 'cuenta bloqueada',
+  INICIO_SESION_INACTIVO: 'cuenta inactiva',
   CAMBIO_CONTRASENA_FALLIDO: 'contraseña actual incorrecta',
 }
 

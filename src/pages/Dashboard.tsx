@@ -16,7 +16,7 @@ import LoadingState, { Skeleton } from '../components/LoadingState'
 import StatCard from '../components/StatCard'
 import { useDashboardData } from '../hooks/useDashboardData'
 import { formatDateTime, formatNumber } from '../utils/formatters'
-import type { IndicadorId } from '../utils/mockData'
+import type { IndicadorId } from '../utils/tipos'
 import { NAV_ITEMS, ROUTES } from '../utils/navigation'
 
 const INDICATOR_ICONS: Record<IndicadorId, Icon> = {

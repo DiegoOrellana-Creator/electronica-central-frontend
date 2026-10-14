@@ -1,13 +1,13 @@
-import type { ModuloCiclo1, Permiso } from './mockData'
+import type { ModuloPermiso, Permiso } from './tipos'
 
 export interface GrupoPermisos {
-  modulo: ModuloCiclo1
+  modulo: ModuloPermiso
   permisos: Permiso[]
 }
 
 /** Agrupa permisos por modulo conservando el orden de aparicion. */
 export function agruparPorModulo(permisos: readonly Permiso[]): GrupoPermisos[] {
-  const grupos = new Map<ModuloCiclo1, Permiso[]>()
+  const grupos = new Map<ModuloPermiso, Permiso[]>()
   for (const permiso of permisos) {
     const lista = grupos.get(permiso.modulo)
     if (lista) lista.push(permiso)

@@ -8,7 +8,7 @@ import Table from '../../components/Table'
 import type { Column } from '../../components/Table'
 import { useToast } from '../../hooks/useToast'
 import type { useRoles } from '../../hooks/useRoles'
-import type { Permiso, Rol, Usuario } from '../../utils/mockData'
+import type { Permiso, Rol, Usuario } from '../../utils/tipos'
 import { normalizeText } from '../../utils/text'
 import RolDetalleModal from './RolDetalleModal'
 import RolFormModal from './RolFormModal'
@@ -22,7 +22,7 @@ interface RolesTabProps {
   operaciones: Operaciones
 }
 
-type ModalRol = { tipo: 'crear' } | { tipo: 'editar' | 'detalle'; rolId: number }
+type ModalRol = { tipo: 'crear' } | { tipo: 'editar' | 'detalle'; rolId: string }
 
 export default function RolesTab({ roles, permisos, usuarios, operaciones }: RolesTabProps) {
   const toast = useToast()

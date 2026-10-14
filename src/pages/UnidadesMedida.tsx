@@ -23,7 +23,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useToast } from '../hooks/useToast'
 import { useUnidades } from '../hooks/useUnidades'
-import type { UnidadMedida } from '../utils/mockData'
+import type { UnidadMedida } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 import UnidadDetalleModal from './unidades/UnidadDetalleModal'
 import UnidadFormModal from './unidades/UnidadFormModal'
@@ -35,7 +35,7 @@ type FiltroEstado = 'todos' | 'activo' | 'inactivo'
 const esFiltroEstado = (valor: string): valor is FiltroEstado =>
   valor === 'todos' || valor === 'activo' || valor === 'inactivo'
 
-type ModalUnidad = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; unidadId: number }
+type ModalUnidad = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; unidadId: string }
 
 export default function UnidadesMedida() {
   const toast = useToast()

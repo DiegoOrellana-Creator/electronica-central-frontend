@@ -9,7 +9,7 @@ import Select from '../../components/Select'
 import Textarea from '../../components/Textarea'
 import { ErrorDeServicio } from '../../services/simulacion'
 import type { DatosCategoria } from '../../services/categoriaService'
-import type { Categoria, EstadoCategoria } from '../../utils/mockData'
+import type { Categoria, EstadoCategoria } from '../../utils/tipos'
 import { focusField } from '../../utils/forms'
 
 interface CategoriaFormModalProps {
@@ -66,7 +66,7 @@ export default function CategoriaFormModal({ categoria, categorias, onSubmit, on
       await onSubmit({
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        categoriaPadreId: padreId ? Number(padreId) : null,
+        categoriaPadreId: padreId || null,
         estado,
       })
     } catch (error) {

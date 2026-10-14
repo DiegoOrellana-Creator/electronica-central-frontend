@@ -5,12 +5,12 @@ import Badge from '../../components/Badge'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
 import Select from '../../components/Select'
-import type { Rol, Usuario } from '../../utils/mockData'
+import type { Rol, Usuario } from '../../utils/tipos'
 
 interface AsignarRolModalProps {
   usuario: Usuario
   roles: readonly Rol[]
-  onSubmit: (rolId: number) => Promise<void>
+  onSubmit: (rolId: string) => Promise<void>
   onClose: () => void
 }
 

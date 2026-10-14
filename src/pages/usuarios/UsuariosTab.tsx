@@ -20,7 +20,7 @@ import Table from '../../components/Table'
 import type { Column } from '../../components/Table'
 import { useToast } from '../../hooks/useToast'
 import type { useUsuarios } from '../../hooks/useUsuarios'
-import type { Permiso, Rol, Usuario } from '../../utils/mockData'
+import type { Permiso, Rol, Usuario } from '../../utils/tipos'
 import { normalizeText } from '../../utils/text'
 import AsignarRolModal from './AsignarRolModal'
 import RevocarRolModal from './RevocarRolModal'
@@ -46,8 +46,8 @@ const esFiltro = (valor: string): valor is FiltroEstado =>
 
 type ModalUsuario =
   | { tipo: 'crear' }
-  | { tipo: 'editar' | 'detalle' | 'asignar' | 'revocar' | 'estado'; usuarioId: number }
-  | { tipo: 'confirmarRevocar'; usuarioId: number; rolId: number }
+  | { tipo: 'editar' | 'detalle' | 'asignar' | 'revocar' | 'estado'; usuarioId: string }
+  | { tipo: 'confirmarRevocar'; usuarioId: string; rolId: string }
 
 export default function UsuariosTab({ usuarios, roles, permisos, operaciones }: UsuariosTabProps) {
   const toast = useToast()

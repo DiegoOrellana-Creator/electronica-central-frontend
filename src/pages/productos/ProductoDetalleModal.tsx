@@ -2,7 +2,7 @@ import Badge from '../../components/Badge'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
 import { formatCurrency } from '../../utils/formatters'
-import type { Categoria, Producto, UnidadMedida } from '../../utils/mockData'
+import type { Categoria, Producto, UnidadMedida } from '../../utils/tipos'
 import { rutaCategoria } from '../../utils/productos'
 
 interface ProductoDetalleModalProps {

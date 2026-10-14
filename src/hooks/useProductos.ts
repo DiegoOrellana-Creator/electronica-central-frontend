@@ -8,7 +8,7 @@ import {
   listarUnidadesParaProductos,
 } from '../services/productoService'
 import type { DatosProducto } from '../services/productoService'
-import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../utils/mockData'
+import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../utils/tipos'
 import type { EstadoCarga } from './estadoCarga'
 
 /** Productos con sus operaciones y las opciones del formulario. Hoy usa servicios simulados en memoria. */
@@ -51,11 +51,11 @@ export function useProductos() {
     setProductos((prev) => [nuevo, ...prev])
   }
 
-  const actualizar = async (id: number, datos: DatosProducto) => {
+  const actualizar = async (id: string, datos: DatosProducto) => {
     reemplazar(await actualizarProducto(id, datos))
   }
 
-  const cambiarEstado = async (id: number, nuevoEstado: EstadoProducto) => {
+  const cambiarEstado = async (id: string, nuevoEstado: EstadoProducto) => {
     reemplazar(await cambiarEstadoProducto(id, nuevoEstado))
   }
 

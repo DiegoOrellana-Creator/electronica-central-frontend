@@ -2,7 +2,7 @@ import { PencilSimpleIcon } from '@phosphor-icons/react'
 import Badge from '../../components/Badge'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
-import type { UnidadMedida } from '../../utils/mockData'
+import type { UnidadMedida } from '../../utils/tipos'
 
 interface UnidadDetalleModalProps {
   unidad: UnidadMedida

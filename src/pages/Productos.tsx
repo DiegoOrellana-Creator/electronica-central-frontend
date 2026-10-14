@@ -24,7 +24,7 @@ import type { Column } from '../components/Table'
 import { useProductos } from '../hooks/useProductos'
 import { useToast } from '../hooks/useToast'
 import { formatCurrency } from '../utils/formatters'
-import type { Producto } from '../utils/mockData'
+import type { Producto } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 import CategoriaOptions from './productos/CategoriaOptions'
 import ProductoDetalleModal from './productos/ProductoDetalleModal'
@@ -37,7 +37,7 @@ type FiltroEstado = 'todos' | 'activo' | 'inactivo'
 const esFiltroEstado = (valor: string): valor is FiltroEstado =>
   valor === 'todos' || valor === 'activo' || valor === 'inactivo'
 
-type ModalProducto = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; productoId: number }
+type ModalProducto = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; productoId: string }
 
 export default function Productos() {
   const toast = useToast()
@@ -65,7 +65,7 @@ export default function Productos() {
   const filtrosActivos = texto !== '' || categoriaFiltro !== '' || estadoFiltro !== 'todos'
 
   const filtrados = productos.filter((producto) => {
-    if (categoriaFiltro && producto.categoriaId !== Number(categoriaFiltro)) return false
+    if (categoriaFiltro && producto.categoriaId !== categoriaFiltro) return false
     if (estadoFiltro !== 'todos' && producto.estado !== estadoFiltro) return false
     if (texto) {
       const categoria = categoriasPorId.get(producto.categoriaId)

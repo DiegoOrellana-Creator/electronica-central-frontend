@@ -2,7 +2,7 @@ import { PencilSimpleIcon } from '@phosphor-icons/react'
 import Badge from '../../components/Badge'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
-import type { Categoria } from '../../utils/mockData'
+import type { Categoria } from '../../utils/tipos'
 
 interface CategoriaDetalleModalProps {
   categoria: Categoria

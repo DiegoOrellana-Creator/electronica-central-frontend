@@ -1,7 +1,7 @@
 import Alert from '../../components/Alert'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
-import type { Rol, Usuario } from '../../utils/mockData'
+import type { Rol, Usuario } from '../../utils/tipos'
 
 interface RevocarRolModalProps {
   usuario: Usuario

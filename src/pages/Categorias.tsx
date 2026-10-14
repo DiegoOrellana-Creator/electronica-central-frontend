@@ -23,7 +23,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useCategorias } from '../hooks/useCategorias'
 import { useToast } from '../hooks/useToast'
-import type { Categoria } from '../utils/mockData'
+import type { Categoria } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 import CategoriaDetalleModal from './categorias/CategoriaDetalleModal'
 import CategoriaFormModal from './categorias/CategoriaFormModal'
@@ -38,7 +38,7 @@ const esFiltroEstado = (valor: string): valor is FiltroEstado =>
 /** Valor del filtro de categoria padre para las categorias principales. */
 const SIN_PADRE = 'ninguno'
 
-type ModalCategoria = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; categoriaId: number }
+type ModalCategoria = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; categoriaId: string }
 
 export default function Categorias() {
   const toast = useToast()
@@ -81,7 +81,7 @@ export default function Categorias() {
 
   const filtradas = ordenadas.filter((categoria) => {
     if (padreFiltro === SIN_PADRE && categoria.categoriaPadreId !== null) return false
-    if (padreFiltro !== '' && padreFiltro !== SIN_PADRE && categoria.categoriaPadreId !== Number(padreFiltro)) {
+    if (padreFiltro !== '' && padreFiltro !== SIN_PADRE && categoria.categoriaPadreId !== padreFiltro) {
       return false
     }
     if (estadoFiltro !== 'todos' && categoria.estado !== estadoFiltro) return false

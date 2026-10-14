@@ -1,7 +1,7 @@
 import Badge from '../../components/Badge'
 import Button from '../../components/Button'
 import Modal from '../../components/Modal'
-import type { Permiso, Rol, Usuario } from '../../utils/mockData'
+import type { Permiso, Rol, Usuario } from '../../utils/tipos'
 import PermisosPorModulo from './PermisosPorModulo'
 
 interface RolDetalleModalProps {

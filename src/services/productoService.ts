@@ -1,65 +1,59 @@
-import { PRODUCTOS_INICIALES } from '../utils/mockData'
-import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../utils/mockData'
-import { normalizeText } from '../utils/text'
-import { categoriasActuales, listarCategorias } from './categoriaService'
-import { listarUnidades, unidadesActuales } from './unidadService'
-import { ErrorDeServicio, LATENCIA_ESCRITURA_MS, LATENCIA_LECTURA_MS, esperar } from './simulacion'
+import { api } from './apiClient'
+import { conErrores } from './errores'
+import { listarCategorias } from './categoriaService'
+import { listarUnidades } from './unidadService'
+import type { Categoria, EstadoProducto, Producto, UnidadMedida } from '../utils/tipos'
 
-// Almacen en memoria que reemplaza temporalmente al backend. Al conectarlo, solo cambia
-// el interior de estas funciones; las firmas y los errores de negocio se mantienen.
+/** Fila tal como la devuelve `GET /api/productos`. */
+interface FilaProducto {
+  id_producto: string
+  nombre: string
+  descripcion: string | null
+  precio_venta: number | string
+  activo: boolean
+  id_categoria: string
+  id_unidad_medida: string
+  marca: string | null
+  modelo: string | null
+}
 
 export interface DatosProducto {
   nombre: string
   descripcion: string
   precio: number
-  categoriaId: number
+  categoriaId: string
   marca: string
   modelo: string
-  unidadId: number
+  unidadId: string
   estado: EstadoProducto
 }
 
-const copiar = (producto: Producto): Producto => ({ ...producto })
+const aProducto = (fila: FilaProducto): Producto => ({
+  id: fila.id_producto,
+  nombre: fila.nombre,
+  descripcion: fila.descripcion ?? '',
+  precio: Number(fila.precio_venta),
+  categoriaId: fila.id_categoria,
+  marca: fila.marca ?? '',
+  modelo: fila.modelo ?? '',
+  unidadId: fila.id_unidad_medida,
+  estado: fila.activo ? 'activo' : 'inactivo',
+})
 
-let productos: Producto[] = PRODUCTOS_INICIALES.map(copiar)
-let siguienteId = Math.max(...productos.map((p) => p.id)) + 1
-
-function buscar(id: number): Producto {
-  const producto = productos.find((p) => p.id === id)
-  if (!producto) throw new ErrorDeServicio('El producto no existe.')
-  return producto
-}
-
-function validarDatos(datos: DatosProducto, idActual?: number) {
-  if (!categoriasActuales().some((c) => c.id === datos.categoriaId)) {
-    throw new ErrorDeServicio('La categoría seleccionada no existe.', 'categoriaId')
-  }
-  if (!unidadesActuales().some((u) => u.id === datos.unidadId)) {
-    throw new ErrorDeServicio('La unidad de medida seleccionada no existe.', 'unidadId')
-  }
-  const existe = productos.some(
-    (p) =>
-      p.id !== idActual &&
-      normalizeText(p.nombre) === normalizeText(datos.nombre.trim()) &&
-      normalizeText(p.marca) === normalizeText(datos.marca.trim()),
-  )
-  if (existe) throw new ErrorDeServicio('Ya existe un producto con ese nombre y esa marca.', 'nombre')
-}
-
-function aplicar(producto: Producto, datos: DatosProducto) {
-  producto.nombre = datos.nombre.trim()
-  producto.descripcion = datos.descripcion.trim()
-  producto.precio = datos.precio
-  producto.categoriaId = datos.categoriaId
-  producto.marca = datos.marca.trim()
-  producto.modelo = datos.modelo.trim()
-  producto.unidadId = datos.unidadId
-  producto.estado = datos.estado
-}
+// El backend genera el codigo del producto y le asigna la ubicacion "SIN-UBICACION".
+const cuerpo = (datos: DatosProducto) => ({
+  nombre: datos.nombre.trim(),
+  descripcion: datos.descripcion.trim(),
+  precioVenta: datos.precio,
+  idCategoria: datos.categoriaId,
+  idUnidadMedida: datos.unidadId,
+  marca: datos.marca.trim(),
+  modelo: datos.modelo.trim(),
+  activo: datos.estado === 'activo',
+})
 
 export async function listarProductos(): Promise<Producto[]> {
-  await esperar(LATENCIA_LECTURA_MS)
-  return productos.map(copiar)
+  return (await api<FilaProducto[]>('/api/productos')).map(aProducto)
 }
 
 /** Categorias disponibles como opciones del formulario. Provienen de `categoriaService` (CU-5). */
@@ -72,26 +66,18 @@ export function listarUnidadesParaProductos(): Promise<UnidadMedida[]> {
   return listarUnidades()
 }
 
-export async function crearProducto(datos: DatosProducto): Promise<Producto> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  validarDatos(datos)
-  const nuevo: Producto = { id: siguienteId++, ...datos }
-  aplicar(nuevo, datos)
-  productos = [nuevo, ...productos]
-  return copiar(nuevo)
+export function crearProducto(datos: DatosProducto): Promise<Producto> {
+  return conErrores(async () => aProducto(await api<FilaProducto>('/api/productos', { method: 'POST', body: cuerpo(datos) })))
 }
 
-export async function actualizarProducto(id: number, datos: DatosProducto): Promise<Producto> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  const producto = buscar(id)
-  validarDatos(datos, id)
-  aplicar(producto, datos)
-  return copiar(producto)
+export function actualizarProducto(id: string, datos: DatosProducto): Promise<Producto> {
+  return conErrores(async () =>
+    aProducto(await api<FilaProducto>(`/api/productos/${id}`, { method: 'PATCH', body: cuerpo(datos) })),
+  )
 }
 
-export async function cambiarEstadoProducto(id: number, estado: EstadoProducto): Promise<Producto> {
-  await esperar(LATENCIA_ESCRITURA_MS)
-  const producto = buscar(id)
-  producto.estado = estado
-  return copiar(producto)
+export function cambiarEstadoProducto(id: string, estado: EstadoProducto): Promise<Producto> {
+  return conErrores(async () =>
+    aProducto(await api<FilaProducto>(`/api/productos/${id}`, { method: 'PATCH', body: { activo: estado === 'activo' } })),
+  )
 }

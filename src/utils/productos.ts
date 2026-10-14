@@ -1,4 +1,4 @@
-import type { Categoria } from './mockData'
+import type { Categoria } from './tipos'
 
 /** Nombre de una categoria precedido por su categoria padre, por ejemplo `Placas de desarrollo › Arduino`. */
 export function rutaCategoria(categoria: Categoria | undefined, categorias: readonly Categoria[]): string {

@@ -7,14 +7,14 @@ import {
 } from '../services/categoriaService'
 import type { DatosCategoria } from '../services/categoriaService'
 import { listarProductos } from '../services/productoService'
-import type { Categoria, EstadoCategoria } from '../utils/mockData'
+import type { Categoria, EstadoCategoria } from '../utils/tipos'
 import type { EstadoCarga } from './estadoCarga'
 
 /** Categorias con sus operaciones. Hoy usa servicios simulados en memoria. */
 export function useCategorias() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   /** Cantidad de productos asociados directamente a cada categoria (solo lectura, informativo). */
-  const [productosPorCategoria, setProductosPorCategoria] = useState<ReadonlyMap<number, number>>(new Map())
+  const [productosPorCategoria, setProductosPorCategoria] = useState<ReadonlyMap<string, number>>(new Map())
   const [estado, setEstado] = useState<EstadoCarga>('cargando')
   const [intento, setIntento] = useState(0)
 
@@ -23,7 +23,7 @@ export function useCategorias() {
     Promise.all([listarCategorias(), listarProductos()]).then(
       ([datosCategorias, datosProductos]) => {
         if (!vigente) return
-        const conteo = new Map<number, number>()
+        const conteo = new Map<string, number>()
         for (const producto of datosProductos) {
           conteo.set(producto.categoriaId, (conteo.get(producto.categoriaId) ?? 0) + 1)
         }
@@ -53,11 +53,11 @@ export function useCategorias() {
     setCategorias((prev) => [...prev, nueva])
   }
 
-  const actualizar = async (id: number, datos: DatosCategoria) => {
+  const actualizar = async (id: string, datos: DatosCategoria) => {
     reemplazar(await actualizarCategoria(id, datos))
   }
 
-  const cambiarEstado = async (id: number, nuevoEstado: EstadoCategoria) => {
+  const cambiarEstado = async (id: string, nuevoEstado: EstadoCategoria) => {
     reemplazar(await cambiarEstadoCategoria(id, nuevoEstado))
   }
 
