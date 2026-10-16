@@ -15,9 +15,10 @@ import EmptyState from '../components/EmptyState'
 import LoadingState, { Skeleton } from '../components/LoadingState'
 import StatCard from '../components/StatCard'
 import { useDashboardData } from '../hooks/useDashboardData'
+import { tienePermiso } from '../services/sesion'
 import { formatDateTime, formatNumber } from '../utils/formatters'
 import type { IndicadorId } from '../utils/tipos'
-import { NAV_ITEMS, ROUTES } from '../utils/navigation'
+import { NAV_ITEMS, ROUTES, puedeVerItem } from '../utils/navigation'
 
 const INDICATOR_ICONS: Record<IndicadorId, Icon> = {
   usuarios: UsersIcon,
@@ -26,8 +27,6 @@ const INDICATOR_ICONS: Record<IndicadorId, Icon> = {
   categorias: TagIcon,
   unidadesMedida: RulerIcon,
 }
-
-const QUICK_ACCESS = NAV_ITEMS.filter((item) => item.to !== ROUTES.dashboard)
 
 const SECTION_TITLE = 'text-base font-semibold text-slate-900'
 const LIST_BOX = 'divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white'
@@ -53,6 +52,11 @@ function DashboardSkeleton() {
 }
 
 export default function Dashboard() {
+  // Se calcula dentro del componente para que dependa del usuario que tiene la sesión abierta.
+  const quickAccess = NAV_ITEMS.filter(
+    (item) => item.to !== ROUTES.dashboard && puedeVerItem(item),
+  )
+  const puedeVerBitacora = tienePermiso('BITACORA_CONSULTAR')
   const { cargando, indicadores, actividad } = useDashboardData()
 
   return (
@@ -101,7 +105,7 @@ export default function Dashboard() {
                 Accesos rápidos
               </h3>
               <ul className={`mt-3 ${LIST_BOX}`}>
-                {QUICK_ACCESS.map(({ label, to, description, icon: ItemIcon }) => (
+                {quickAccess.map(({ label, to, description, icon: ItemIcon }) => (
                   <li key={to}>
                     <Link
                       to={to}
@@ -132,12 +136,14 @@ export default function Dashboard() {
                 <h3 id="actividad-titulo" className={SECTION_TITLE}>
                   Actividad reciente
                 </h3>
-                <Link
-                  to={ROUTES.bitacora}
-                  className="rounded-md px-1 text-sm font-medium text-blue-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-                >
-                  Ver bitácora
-                </Link>
+                {puedeVerBitacora && (
+                  <Link
+                    to={ROUTES.bitacora}
+                    className="rounded-md px-1 text-sm font-medium text-blue-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                  >
+                    Ver bitácora
+                  </Link>
+                )}
               </div>
               {actividad.length > 0 ? (
                 <ul className={`mt-3 ${LIST_BOX}`}>

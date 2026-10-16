@@ -23,6 +23,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useProductos } from '../hooks/useProductos'
 import { useToast } from '../hooks/useToast'
+import { tienePermiso } from '../services/sesion'
 import { formatCurrency } from '../utils/formatters'
 import type { Producto } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
@@ -42,6 +43,8 @@ type ModalProducto = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'
 export default function Productos() {
   const toast = useToast()
   const { productos, categorias, unidades, estado, recargar, crear, actualizar, cambiarEstado } = useProductos()
+  // Solo el administrador crea, edita o cambia el estado de los productos.
+  const puedeModificar = tienePermiso('CATALOGO_GESTIONAR')
 
   const [busqueda, setBusqueda] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -144,21 +147,25 @@ export default function Productos() {
             icon={EyeIcon}
             onClick={() => setModal({ tipo: 'detalle', productoId: producto.id })}
           />
-          <IconButton
-            label={`Editar ${producto.nombre}`}
-            icon={PencilSimpleIcon}
-            onClick={() => setModal({ tipo: 'editar', productoId: producto.id })}
-          />
-          <ActionMenu
-            label={`Más acciones para ${producto.nombre}`}
-            items={[
-              {
-                label: producto.estado === 'activo' ? 'Desactivar producto' : 'Activar producto',
-                icon: PowerIcon,
-                onSelect: () => setModal({ tipo: 'estado', productoId: producto.id }),
-              },
-            ]}
-          />
+          {puedeModificar && (
+            <>
+              <IconButton
+                label={`Editar ${producto.nombre}`}
+                icon={PencilSimpleIcon}
+                onClick={() => setModal({ tipo: 'editar', productoId: producto.id })}
+              />
+              <ActionMenu
+                label={`Más acciones para ${producto.nombre}`}
+                items={[
+                  {
+                    label: producto.estado === 'activo' ? 'Desactivar producto' : 'Activar producto',
+                    icon: PowerIcon,
+                    onSelect: () => setModal({ tipo: 'estado', productoId: producto.id }),
+                  },
+                ]}
+              />
+            </>
+          )}
         </div>
       ),
     },
@@ -234,7 +241,9 @@ export default function Productos() {
       <header>
         <h2 className="text-xl font-semibold text-slate-900">Productos</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Consulte y gestione el catálogo de productos electrónicos de la tienda.
+          {puedeModificar
+            ? 'Consulte y gestione el catálogo de productos electrónicos de la tienda.'
+            : 'Consulte el catálogo de productos electrónicos de la tienda.'}
         </p>
       </header>
 
@@ -271,10 +280,12 @@ export default function Productos() {
                 placeholder="Buscar por nombre, marca, modelo…"
               />
             </div>
-            <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
-              <PlusIcon size={18} aria-hidden="true" />
-              Nuevo producto
-            </Button>
+            {puedeModificar && (
+              <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
+                <PlusIcon size={18} aria-hidden="true" />
+                Nuevo producto
+              </Button>
+            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
@@ -333,8 +344,14 @@ export default function Productos() {
             <EmptyState
               icon={PackageIcon}
               title="Aún no hay productos"
-              description="Cree el primer producto para comenzar el catálogo."
-              action={<Button onClick={() => setModal({ tipo: 'crear' })}>Nuevo producto</Button>}
+              description={
+                puedeModificar
+                  ? 'Cree el primer producto para comenzar el catálogo.'
+                  : 'Todavía no se han registrado productos en el catálogo.'
+              }
+              action={
+                puedeModificar ? <Button onClick={() => setModal({ tipo: 'crear' })}>Nuevo producto</Button> : undefined
+              }
             />
           ) : (
             <EmptyState

@@ -107,3 +107,91 @@ export interface RegistroBitacora {
   usuario: string
   ip: string
 }
+
+// ---------- Inventario (CU-11) ----------
+
+export type TipoAlertaStock = 'AGOTADO' | 'BAJO_MINIMO'
+
+export interface UbicacionFisica {
+  idUbicacion: string
+  codigo: string
+  pasillo: string
+  estante: string
+}
+
+/** Elemento de la lista de existencias tal como lo entrega `GET /api/inventario`. */
+export interface ItemInventario {
+  idProducto: string
+  codigo: string
+  nombre: string
+  stockActual: number
+  stockMinimo: number
+  ubicacion: UbicacionFisica
+  alerta: TipoAlertaStock | null
+  /** Costo promedio ponderado en Bs. Opcional: solo visible para usuarios con permiso INVENTARIO_GESTIONAR. */
+  costoPromedio?: number
+  /** Unidad de medida asociada si se resuelve mediante el catálogo. */
+  unidadMedida?: string
+}
+
+export type TipoMovimientoInventario = 'ENTRADA' | 'SALIDA'
+
+/** Movimiento histórico de inventario tal como lo entrega `GET /api/inventario/:productoId/movimientos`. */
+export interface MovimientoInventario {
+  idMovimiento: string
+  fechaHora: string
+  tipo: TipoMovimientoInventario
+  cantidad: number
+  motivo: string
+  idProducto: string
+  idUsuario: string
+  responsable: string
+  /** Costo unitario en Bs. Opcional: solo visible para usuarios con permiso INVENTARIO_GESTIONAR. */
+  costoUnitario?: number
+}
+
+/** Metadatos de paginacion devueltos por el backend. */
+export interface MetaPaginacion {
+  pagina: number
+  limite: number
+  total: number
+}
+
+/** Datos requeridos para registrar un ajuste de inventario (Entrada o Salida). */
+export interface DatosAjusteInventario {
+  idProducto: string
+  tipo: TipoMovimientoInventario
+  cantidad: number
+  motivo: string
+  /** Requerido si tipo === 'ENTRADA'. Opcional para 'SALIDA'. */
+  costoUnitario?: number
+  /** Clave de idempotencia única. Si no se suministra, el servicio la genera. */
+  claveIdempotencia?: string
+}
+
+/** Respuesta de la API tras registrar un ajuste de inventario. */
+export interface ResultadoAjusteInventario {
+  movimiento: {
+    idMovimiento: string
+    tipo: TipoMovimientoInventario
+    cantidad: number
+    motivo: string
+    costoUnitario: number
+    fechaHora: string
+  }
+  existencia: {
+    idProducto: string
+    stockActual: number
+    stockMinimo: number
+    costoPromedio: number
+  }
+}
+
+/** Respuesta tras actualizar el stock mínimo de un producto. */
+export interface ResultadoStockMinimo {
+  idProducto: string
+  stockActual: number
+  stockMinimo: number
+  costoPromedio: number
+}
+

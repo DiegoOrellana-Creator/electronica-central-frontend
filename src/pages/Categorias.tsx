@@ -23,6 +23,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useCategorias } from '../hooks/useCategorias'
 import { useToast } from '../hooks/useToast'
+import { tienePermiso } from '../services/sesion'
 import type { Categoria } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 import CategoriaDetalleModal from './categorias/CategoriaDetalleModal'
@@ -43,6 +44,8 @@ type ModalCategoria = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado
 export default function Categorias() {
   const toast = useToast()
   const { categorias, productosPorCategoria, estado, recargar, crear, actualizar, cambiarEstado } = useCategorias()
+  // Solo el administrador crea, edita o cambia el estado de las categorias.
+  const puedeModificar = tienePermiso('CATALOGO_GESTIONAR')
 
   const [busqueda, setBusqueda] = useState('')
   const [padreFiltro, setPadreFiltro] = useState('')
@@ -142,21 +145,25 @@ export default function Categorias() {
             icon={EyeIcon}
             onClick={() => setModal({ tipo: 'detalle', categoriaId: categoria.id })}
           />
-          <IconButton
-            label={`Editar ${categoria.nombre}`}
-            icon={PencilSimpleIcon}
-            onClick={() => setModal({ tipo: 'editar', categoriaId: categoria.id })}
-          />
-          <ActionMenu
-            label={`Más acciones para ${categoria.nombre}`}
-            items={[
-              {
-                label: categoria.estado === 'activo' ? 'Desactivar categoría' : 'Activar categoría',
-                icon: PowerIcon,
-                onSelect: () => setModal({ tipo: 'estado', categoriaId: categoria.id }),
-              },
-            ]}
-          />
+          {puedeModificar && (
+            <>
+              <IconButton
+                label={`Editar ${categoria.nombre}`}
+                icon={PencilSimpleIcon}
+                onClick={() => setModal({ tipo: 'editar', categoriaId: categoria.id })}
+              />
+              <ActionMenu
+                label={`Más acciones para ${categoria.nombre}`}
+                items={[
+                  {
+                    label: categoria.estado === 'activo' ? 'Desactivar categoría' : 'Activar categoría',
+                    icon: PowerIcon,
+                    onSelect: () => setModal({ tipo: 'estado', categoriaId: categoria.id }),
+                  },
+                ]}
+              />
+            </>
+          )}
         </div>
       ),
     },
@@ -208,7 +215,7 @@ export default function Categorias() {
             padre={seleccionada.categoriaPadreId !== null ? categoriasPorId.get(seleccionada.categoriaPadreId) : undefined}
             subcategorias={subcategorias}
             productosAsociados={productosAsociados}
-            onEditar={() => setModal({ tipo: 'editar', categoriaId: seleccionada.id })}
+            onEditar={puedeModificar ? () => setModal({ tipo: 'editar', categoriaId: seleccionada.id }) : undefined}
             onClose={cerrar}
           />
         )
@@ -248,7 +255,9 @@ export default function Categorias() {
       <header>
         <h2 className="text-xl font-semibold text-slate-900">Categorías</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Administre las categorías y subcategorías que organizan los productos de la tienda.
+          {puedeModificar
+            ? 'Administre las categorías y subcategorías que organizan los productos de la tienda.'
+            : 'Consulte las categorías y subcategorías que organizan los productos de la tienda.'}
         </p>
       </header>
 
@@ -285,10 +294,12 @@ export default function Categorias() {
                 placeholder="Buscar por nombre, descripción o padre…"
               />
             </div>
-            <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
-              <PlusIcon size={18} aria-hidden="true" />
-              Nueva categoría
-            </Button>
+            {puedeModificar && (
+              <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
+                <PlusIcon size={18} aria-hidden="true" />
+                Nueva categoría
+              </Button>
+            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
@@ -352,8 +363,14 @@ export default function Categorias() {
             <EmptyState
               icon={TagIcon}
               title="Aún no hay categorías"
-              description="Cree la primera categoría para organizar los productos."
-              action={<Button onClick={() => setModal({ tipo: 'crear' })}>Nueva categoría</Button>}
+              description={
+                puedeModificar
+                  ? 'Cree la primera categoría para organizar los productos.'
+                  : 'Todavía no se han registrado categorías.'
+              }
+              action={
+                puedeModificar ? <Button onClick={() => setModal({ tipo: 'crear' })}>Nueva categoría</Button> : undefined
+              }
             />
           ) : (
             <EmptyState

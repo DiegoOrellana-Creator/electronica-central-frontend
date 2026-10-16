@@ -23,6 +23,7 @@ import Table from '../components/Table'
 import type { Column } from '../components/Table'
 import { useToast } from '../hooks/useToast'
 import { useUnidades } from '../hooks/useUnidades'
+import { tienePermiso } from '../services/sesion'
 import type { UnidadMedida } from '../utils/tipos'
 import { normalizeText } from '../utils/text'
 import UnidadDetalleModal from './unidades/UnidadDetalleModal'
@@ -40,6 +41,8 @@ type ModalUnidad = { tipo: 'crear' } | { tipo: 'editar' | 'detalle' | 'estado'; 
 export default function UnidadesMedida() {
   const toast = useToast()
   const { unidades, productosPorUnidad, estado, recargar, crear, actualizar, cambiarEstado } = useUnidades()
+  // Solo el administrador crea, edita o cambia el estado de las unidades de medida.
+  const puedeModificar = tienePermiso('CATALOGO_GESTIONAR')
 
   const [busqueda, setBusqueda] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState<FiltroEstado>('todos')
@@ -104,21 +107,25 @@ export default function UnidadesMedida() {
             icon={EyeIcon}
             onClick={() => setModal({ tipo: 'detalle', unidadId: unidad.id })}
           />
-          <IconButton
-            label={`Editar ${unidad.nombre}`}
-            icon={PencilSimpleIcon}
-            onClick={() => setModal({ tipo: 'editar', unidadId: unidad.id })}
-          />
-          <ActionMenu
-            label={`Más acciones para ${unidad.nombre}`}
-            items={[
-              {
-                label: unidad.estado === 'activo' ? 'Desactivar unidad' : 'Activar unidad',
-                icon: PowerIcon,
-                onSelect: () => setModal({ tipo: 'estado', unidadId: unidad.id }),
-              },
-            ]}
-          />
+          {puedeModificar && (
+            <>
+              <IconButton
+                label={`Editar ${unidad.nombre}`}
+                icon={PencilSimpleIcon}
+                onClick={() => setModal({ tipo: 'editar', unidadId: unidad.id })}
+              />
+              <ActionMenu
+                label={`Más acciones para ${unidad.nombre}`}
+                items={[
+                  {
+                    label: unidad.estado === 'activo' ? 'Desactivar unidad' : 'Activar unidad',
+                    icon: PowerIcon,
+                    onSelect: () => setModal({ tipo: 'estado', unidadId: unidad.id }),
+                  },
+                ]}
+              />
+            </>
+          )}
         </div>
       ),
     },
@@ -160,7 +167,7 @@ export default function UnidadesMedida() {
           <UnidadDetalleModal
             unidad={seleccionada}
             productosAsociados={productosPorUnidad.get(seleccionada.id) ?? 0}
-            onEditar={() => setModal({ tipo: 'editar', unidadId: seleccionada.id })}
+            onEditar={puedeModificar ? () => setModal({ tipo: 'editar', unidadId: seleccionada.id }) : undefined}
             onClose={cerrar}
           />
         )
@@ -201,7 +208,9 @@ export default function UnidadesMedida() {
       <header>
         <h2 className="text-xl font-semibold text-slate-900">Unidades de Medida</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Administre las unidades en las que se venden los productos de la tienda.
+          {puedeModificar
+            ? 'Administre las unidades en las que se venden los productos de la tienda.'
+            : 'Consulte las unidades en las que se venden los productos de la tienda.'}
         </p>
       </header>
 
@@ -238,10 +247,12 @@ export default function UnidadesMedida() {
                 placeholder="Buscar por nombre o abreviatura…"
               />
             </div>
-            <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
-              <PlusIcon size={18} aria-hidden="true" />
-              Nueva unidad
-            </Button>
+            {puedeModificar && (
+              <Button className="sm:shrink-0" onClick={() => setModal({ tipo: 'crear' })}>
+                <PlusIcon size={18} aria-hidden="true" />
+                Nueva unidad
+              </Button>
+            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -291,8 +302,14 @@ export default function UnidadesMedida() {
             <EmptyState
               icon={RulerIcon}
               title="Aún no hay unidades de medida"
-              description="Cree la primera unidad para poder asignarla a los productos."
-              action={<Button onClick={() => setModal({ tipo: 'crear' })}>Nueva unidad</Button>}
+              description={
+                puedeModificar
+                  ? 'Cree la primera unidad para poder asignarla a los productos.'
+                  : 'Todavía no se han registrado unidades de medida.'
+              }
+              action={
+                puedeModificar ? <Button onClick={() => setModal({ tipo: 'crear' })}>Nueva unidad</Button> : undefined
+              }
             />
           ) : (
             <EmptyState

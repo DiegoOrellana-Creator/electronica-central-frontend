@@ -8,7 +8,8 @@ interface UnidadDetalleModalProps {
   unidad: UnidadMedida
   /** Productos que utilizan la unidad. */
   productosAsociados: number
-  onEditar: () => void
+  /** Si no se indica (usuario sin permiso para modificar), el boton Editar no se muestra. */
+  onEditar?: () => void
   onClose: () => void
 }
 
@@ -24,10 +25,12 @@ export default function UnidadDetalleModal({ unidad, productosAsociados, onEdita
           <Button variant="secondary" data-autofocus onClick={onClose}>
             Cerrar
           </Button>
-          <Button onClick={onEditar}>
-            <PencilSimpleIcon size={18} aria-hidden="true" />
-            Editar unidad
-          </Button>
+          {onEditar && (
+            <Button onClick={onEditar}>
+              <PencilSimpleIcon size={18} aria-hidden="true" />
+              Editar unidad
+            </Button>
+          )}
         </>
       }
     >

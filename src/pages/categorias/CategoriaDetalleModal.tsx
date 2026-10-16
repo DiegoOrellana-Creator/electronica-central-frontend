@@ -11,7 +11,8 @@ interface CategoriaDetalleModalProps {
   subcategorias: readonly Categoria[]
   /** Productos asociados a la categoria (y a sus subcategorias, si es principal). */
   productosAsociados: number
-  onEditar: () => void
+  /** Si no se indica (usuario sin permiso para modificar), el boton Editar no se muestra. */
+  onEditar?: () => void
   onClose: () => void
 }
 
@@ -34,10 +35,12 @@ export default function CategoriaDetalleModal({
           <Button variant="secondary" data-autofocus onClick={onClose}>
             Cerrar
           </Button>
-          <Button onClick={onEditar}>
-            <PencilSimpleIcon size={18} aria-hidden="true" />
-            Editar categoría
-          </Button>
+          {onEditar && (
+            <Button onClick={onEditar}>
+              <PencilSimpleIcon size={18} aria-hidden="true" />
+              Editar categoría
+            </Button>
+          )}
         </>
       }
     >

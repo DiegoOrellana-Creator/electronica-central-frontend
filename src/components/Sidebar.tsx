@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { XIcon } from '@phosphor-icons/react'
-import { BRAND_NAME, NAV_ITEMS, ROUTES } from '../utils/navigation'
+import { BRAND_NAME, NAV_ITEMS, ROUTES, puedeVerItem } from '../utils/navigation'
 import { FOCUS_RING, cn } from '../utils/styles'
 import { useEscapeKey } from '../hooks/useEscapeKey'
 
@@ -59,7 +59,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         <nav aria-label="Navegación principal" className="flex-1 overflow-y-auto overscroll-contain p-3">
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map(({ label, to, icon: NavIcon }) => (
+            {NAV_ITEMS.filter(puedeVerItem).map(({ label, to, icon: NavIcon }) => (
               <li key={to}>
                 <NavLink
                   to={to}

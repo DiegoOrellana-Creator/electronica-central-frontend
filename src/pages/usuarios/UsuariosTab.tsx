@@ -20,6 +20,7 @@ import Table from '../../components/Table'
 import type { Column } from '../../components/Table'
 import { useToast } from '../../hooks/useToast'
 import type { useUsuarios } from '../../hooks/useUsuarios'
+import { tienePermiso } from '../../services/sesion'
 import type { Permiso, Rol, Usuario } from '../../utils/tipos'
 import { normalizeText } from '../../utils/text'
 import AsignarRolModal from './AsignarRolModal'
@@ -44,6 +45,9 @@ type FiltroEstado = 'todos' | 'activos' | 'inactivos'
 const esFiltro = (valor: string): valor is FiltroEstado =>
   valor === 'todos' || valor === 'activos' || valor === 'inactivos'
 
+/** Roles que un empleado (sin USUARIOS_GESTIONAR) puede asignar al crear un usuario. */
+const ROLES_DEL_EMPLEADO = ['VENDEDOR', 'CLIENTE']
+
 type ModalUsuario =
   | { tipo: 'crear' }
   | { tipo: 'editar' | 'detalle' | 'asignar' | 'revocar' | 'estado'; usuarioId: string }
@@ -51,6 +55,11 @@ type ModalUsuario =
 
 export default function UsuariosTab({ usuarios, roles, permisos, operaciones }: UsuariosTabProps) {
   const toast = useToast()
+  // Solo el administrador edita usuarios, cambia su estado o gestiona sus roles.
+  // El empleado puede ver la lista y crear usuarios nuevos.
+  const puedeGestionar = tienePermiso('USUARIOS_GESTIONAR')
+  const rolesAsignables = puedeGestionar ? roles : roles.filter((rol) => ROLES_DEL_EMPLEADO.includes(rol.nombre))
+
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<FiltroEstado>('todos')
   const [modal, setModal] = useState<ModalUsuario | null>(null)
@@ -116,33 +125,37 @@ export default function UsuariosTab({ usuarios, roles, permisos, operaciones }: 
             icon={EyeIcon}
             onClick={() => setModal({ tipo: 'detalle', usuarioId: usuario.id })}
           />
-          <IconButton
-            label={`Editar ${usuario.nombre}`}
-            icon={PencilSimpleIcon}
-            onClick={() => setModal({ tipo: 'editar', usuarioId: usuario.id })}
-          />
-          <ActionMenu
-            label={`Más acciones para ${usuario.nombre}`}
-            items={[
-              {
-                label: 'Asignar rol',
-                icon: UserPlusIcon,
-                disabled: usuario.rolesIds.length >= roles.length,
-                onSelect: () => setModal({ tipo: 'asignar', usuarioId: usuario.id }),
-              },
-              {
-                label: 'Revocar rol',
-                icon: UserMinusIcon,
-                disabled: usuario.rolesIds.length === 0,
-                onSelect: () => setModal({ tipo: 'revocar', usuarioId: usuario.id }),
-              },
-              {
-                label: usuario.estado === 'activo' ? 'Desactivar usuario' : 'Activar usuario',
-                icon: PowerIcon,
-                onSelect: () => setModal({ tipo: 'estado', usuarioId: usuario.id }),
-              },
-            ]}
-          />
+          {puedeGestionar && (
+            <>
+              <IconButton
+                label={`Editar ${usuario.nombre}`}
+                icon={PencilSimpleIcon}
+                onClick={() => setModal({ tipo: 'editar', usuarioId: usuario.id })}
+              />
+              <ActionMenu
+                label={`Más acciones para ${usuario.nombre}`}
+                items={[
+                  {
+                    label: 'Asignar rol',
+                    icon: UserPlusIcon,
+                    disabled: usuario.rolesIds.length >= roles.length,
+                    onSelect: () => setModal({ tipo: 'asignar', usuarioId: usuario.id }),
+                  },
+                  {
+                    label: 'Revocar rol',
+                    icon: UserMinusIcon,
+                    disabled: usuario.rolesIds.length === 0,
+                    onSelect: () => setModal({ tipo: 'revocar', usuarioId: usuario.id }),
+                  },
+                  {
+                    label: usuario.estado === 'activo' ? 'Desactivar usuario' : 'Activar usuario',
+                    icon: PowerIcon,
+                    onSelect: () => setModal({ tipo: 'estado', usuarioId: usuario.id }),
+                  },
+                ]}
+              />
+            </>
+          )}
         </div>
       ),
     },
@@ -156,7 +169,7 @@ export default function UsuariosTab({ usuarios, roles, permisos, operaciones }: 
     if (modal.tipo === 'crear') {
       return (
         <UsuarioFormModal
-          roles={roles}
+          roles={rolesAsignables}
           onClose={cerrar}
           onSubmit={async (datos) => {
             await operaciones.crear(datos)

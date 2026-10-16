@@ -5,6 +5,7 @@ import LoadingState, { Skeleton } from '../components/LoadingState'
 import Tabs from '../components/Tabs'
 import { useRoles } from '../hooks/useRoles'
 import { useUsuarios } from '../hooks/useUsuarios'
+import { tienePermiso } from '../services/sesion'
 import RolesTab from './usuarios/RolesTab'
 import UsuariosTab from './usuarios/UsuariosTab'
 
@@ -17,7 +18,9 @@ type TabId = (typeof TABS)[number]['id']
 
 export default function Usuarios() {
   const [params, setParams] = useSearchParams()
-  const tab: TabId = params.get('tab') === 'roles' ? 'roles' : 'usuarios'
+  // Solo el administrador gestiona roles y permisos; el empleado solo ve y crea usuarios.
+  const puedeGestionar = tienePermiso('USUARIOS_GESTIONAR')
+  const tab: TabId = puedeGestionar && params.get('tab') === 'roles' ? 'roles' : 'usuarios'
 
   const { usuarios, estado: estadoUsuarios, recargar: recargarUsuarios, ...operacionesUsuarios } = useUsuarios()
   const { roles, permisos, estado: estadoRoles, recargar: recargarRoles, ...operacionesRoles } = useRoles()
@@ -37,9 +40,13 @@ export default function Usuarios() {
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="text-xl font-semibold text-slate-900">Usuarios y Roles</h2>
+        <h2 className="text-xl font-semibold text-slate-900">
+          {puedeGestionar ? 'Usuarios y Roles' : 'Usuarios'}
+        </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Gestione las cuentas de acceso, los roles y los permisos del sistema.
+          {puedeGestionar
+            ? 'Gestione las cuentas de acceso, los roles y los permisos del sistema.'
+            : 'Consulte las cuentas de acceso y registre nuevos usuarios.'}
         </p>
       </header>
 
@@ -64,7 +71,7 @@ export default function Usuarios() {
         >
           Ocurrió un problema al obtener los usuarios y roles. Intente nuevamente.
         </Alert>
-      ) : (
+      ) : puedeGestionar ? (
         <>
           <Tabs label="Secciones de usuarios y roles" idPrefix="ur" tabs={TABS} value={tab} onChange={cambiarTab} />
           {tab === 'usuarios' ? (
@@ -77,6 +84,8 @@ export default function Usuarios() {
             </div>
           )}
         </>
+      ) : (
+        <UsuariosTab usuarios={usuarios} roles={roles} permisos={permisos} operaciones={operacionesUsuarios} />
       )}
     </div>
   )
